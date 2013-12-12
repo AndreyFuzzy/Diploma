@@ -1,19 +1,19 @@
 function [w,fail] = process_extract(stripe)
 	f = abs(fft(stripe));
 	if (isempty(findpeaks(f)) == 0)
-		tone= max(findpeaks(f));
+		tone = max(findpeaks(f));
 	else
 		w = 0.0;
 		fail = 1;
 		return
 	end
 	indices = find(f==tone);
-	if (length(indices)>2)
+	if (length(indices) ~= 2)
 		w = 0.0;
 		fail = 1;
 		return
 	end
-	if (indices(2) == 101)
+	if (indices(2) == length(stripe))
 		w =0.0;
 		fail = 1;
 		return;

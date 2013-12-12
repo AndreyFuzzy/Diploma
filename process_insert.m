@@ -7,10 +7,10 @@ function stripe = process_insert(stripe, bit)
 		return;
 	end
 	indices = find(g==tone);
-	if (length(indices)>2)
+	if (length(indices) ~= 2)
 		return;
 	end
-	if (indices(2) == 101)
+	if (indices(2) == length(stripe))
 		return;
 	end
 	[y1,y2] = insertbit(g(indices(1)-1),g(indices(1)),g(indices(1)+1),bit);

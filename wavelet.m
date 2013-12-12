@@ -1,59 +1,54 @@
-filename = 'D:\Diploma\2.wav';
-wavename = 'db8';
-bitsequence = [1,0,1,1,0,1,1,1,1,1];
-failsequence = [0,0,0,0,0,0,0,0,0,0];
-nodesequence = [255:265];
-w = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
-threshold = 0.5;
+textfile = input('Textfile:');
+fid = fopen(textfile, 'r');
+bitmap = fread(fid, 'char=>uint32');
+bitsequence = dec2bin(bitmap);
+L = length(bitsequence);
 
-[sig,Fs] = audioread(filename);
-samples = [1,Fs/2];
-counter = 0;
+outfid = fopen('E:\Diploma\out1.txt','w');
 
-for count = 1:1:floor(length(sig)/Fs*2)
-	[y,Fs] = audioread(filename,samples);
+nodesequence8 = [255:260];
+nodesequence7 = [130:134];
+nodesequence6 = [67:69];
+w = linspace(0.0,0.0,L*7);
+failsequence = linspace(0,0,L*7);
+
+audiofile = input('Audiofile:');
+[sig,Fs] = audioread(audiofile);
+samples = [1,Fs/4];
+
+for count = 1:1:L
+	[y,Fs] = audioread(audiofile,samples);
 	y = y(:,1);
-	counter = counter + 1;
-	samples = samples + Fs/2;
-	T = wpdec(y,8,wavename);
+	samples = samples + Fs/4;
+	T = wpdec(y,8,'db8');
 	T1 = T;
 
 	for i=1:1:6
-		stripe = read(T,'cfs',nodesequence(i));
-		stripe = process_insert(stripe,bitsequence(i));
-		T1 = write(T1,'cfs',nodesequence(i),stripe);
+		stripe = read(T,'cfs',nodesequence8(i));
+		stripe = process_insert(stripe,mod(count,2));
+		T1 = write(T1,'cfs',nodesequence8(i),stripe);
 	end
 
 	y = wprec(T1);
 
-	for i = 1:1:Fs/2
-		signedsignal((counter-1)*Fs/2+i) = y(i);
-	end
-end
-
-counter = 0;
-
-for count = 1:1:floor(length(sig)/Fs*2)
-	for j = 1:1:Fs/2
-		y(j) = signedsignal(counter*Fs/2+j);
-	end
-	counter = counter + 1;
-
-	T = wpdec(y,8,wavename);
+	T = wpdec(y,8,'db8');
 	for i=1:1:6
-		stripe = read(T,'cfs',nodesequence(i));
+		stripe = read(T,'cfs',nodesequence8(i));
 		[wans, fail] = process_extract(stripe);
-		w(i) = w(i) + wans;
-		failsequence(i) = failsequence(i) + fail;		
-	end	
+		w(count) = w(count) + wans;
+		failsequence(count) = failsequence(count) + fail;		
+	end
 end
 
-for i=1:1:6
-	if (w(i)/(floor(length(sig)/Fs*2)-failsequence(i)) > threshold)
+for i=1:1:L
+	if (w(i)/(6 - failsequence(i)) > 0.5)
 		bits(i) = 1;
-	elseif(w(i)/(floor(length(sig)/Fs*2)-failsequence(i)) < -threshold)
+	elseif(w(i)/(6 - failsequence(i)) < -0.5)
 			bits(i) = 0;
 		else
 			bits(i) = 2;
 	end
 end
+
+fclose(fid);
+fclose(outfid);
