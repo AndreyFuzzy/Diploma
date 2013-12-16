@@ -1,1 +1,1 @@
-textfile = input
+ObstaclesObstaclesObstacles

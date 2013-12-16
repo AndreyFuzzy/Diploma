@@ -18,13 +18,17 @@ w = linspace(0.0,0.0,L*7);
 
 audiofile = input('Audiofile:');
 [sig,Fs] = audioread(audiofile);
-samples = [1,Fs/2];
+samples = [1,Fs/10];
 
-for count = 1:1:L*15
+count = 1;
+while count <= L*5
 	[y,Fs] = audioread(audiofile,samples);
-	samples = samples + Fs/2;
-	y = frame_insert(y,count,code(count));
-	code(count) = frame_extract(y,count);
+	samples = samples + Fs/10;
+	y = frame_insert(y,code((3*(count-1)+1):(3*(count-1)+3)));
+	code((3*(count-1)+1):(3*(count-1)+3)) = frame_extract(y);
+	if code(3*(count-1)+1) ~= 2 & code(3*(count-1)+2) ~= 2 & code(3*(count-1)+3) ~= 2
+		count = count + 1;
+	end
 end
 
 for i=1:1:L
