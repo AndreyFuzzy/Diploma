@@ -1,43 +1,24 @@
+figure('Menubar','None','Name','I Like Trains','NumberTitle','Off');
+uicontrol('Style','PushButton','String','Insert','Position',[20,100,60,20],'Callback','whole_insert(code,audiofile,audioout,L);');
+uicontrol('Style','PushButton','String','Extract','Position',[40,200,60,20],'Callback','x = whole_extract(audioout,L);');
+
 textfile = input('Textfile:');
+audiofile = input('Audiofile:');
+audioout = input('Output file:');
+
 fid = fopen(textfile, 'r');
 bitmap = fread(fid, 'char=>uint32');
 bitsequence = dec2bin(bitmap) - 48;
 bitsequence = bitsequence';
 L = length(bitsequence);
 
-code = encode(bitsequence(:,1),15,11);
+z = gf(bitsequence(:,1),1);
+code = bchenc(z',15,7)';
 for i=2:1:L
-	code = horzcat(code,encode(bitsequence(:,i),15,11));
+	z = gf(bitsequence(:,i),1);
+	code = horzcat(code,bchenc(z',15,7)');
 end;
 
-outfid = fopen('E:\Diploma\out1.txt','w');
-
-nodesequence7 = [130:134];
-nodesequence6 = [67:69];
-w = linspace(0.0,0.0,L*7);
-
-audiofile = input('Audiofile:');
-[sig,Fs] = audioread(audiofile);
-samples = [1,Fs/10];
-
-count = 1;
-while count <= L*5
-	[y,Fs] = audioread(audiofile,samples);
-	samples = samples + Fs/10;
-	y = frame_insert(y,code((3*(count-1)+1):(3*(count-1)+3)));
-	code((3*(count-1)+1):(3*(count-1)+3)) = frame_extract(y);
-	if code(3*(count-1)+1) ~= 2 & code(3*(count-1)+2) ~= 2 & code(3*(count-1)+3) ~= 2
-		count = count + 1;
-	end
-end
-
-for i=1:1:L
-	bits = decode(code(:,i),15,11);
-	bits = bits(1:7);
-	bitsequence(:,i) = bits;	
-end;
-
-bitsequence = bitsequence';
-x = char(bin2dec(char(bitsequence+48)));
-x = x';
-fclose(fid);
+whole_insert(code,audiofile,audioout,L);
+whole_insert(code,audioout,audioout,L);
+x = whole_extract(audioout,L);

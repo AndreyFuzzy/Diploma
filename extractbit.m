@@ -1,6 +1,6 @@
 function [w] = extractbit(eL, eT, eR)
-	alpha = 0.1;
-	beta = 0.5;
+	alpha = 0.001;
+	beta = 1;
 
 	eM = (eL+eR)/2;
 	L1 = (eT-eM)*alpha;
